@@ -27,14 +27,21 @@ jobs:
       - name: Build proot-${{ matrix.target_arch }}
         working-directory: ./termux-packages
         run: |
+          # Fix permissions: Give ownership to UID 1000 (builder user inside Docker)
+          sudo chown -R 1000:1000 .
+
+          # Run the build
           ./scripts/run-docker.sh ./build-package.sh -a ${{ matrix.target_arch }} -I proot-portable
-          ./scripts/run-docker.sh --run-command "chown -R 1001:1001 /home/builder/termux-packages"
+
+          # Fix permissions back: Give ownership back to runner user so artifacts can be uploaded
+          sudo chown -R 1001:1001 .
 
       - name: Upload proot-${{ matrix.target_arch }}
         uses: actions/upload-artifact@v4
         with:
           name: proot-${{ matrix.target_arch }}
-          path: public
+          # The build script places the binary in the root of the repo
+          path: termux-packages/proot
 
   pages:
     needs: build
