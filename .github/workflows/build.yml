@@ -22,7 +22,22 @@ jobs:
       - name: Add proot-portable package
         run: |
           mkdir termux-packages/packages/proot-portable
-          cp build.sh termux-packages/packages/proot-portable
+          cat > termux-packages/packages/proot-portable/build.sh << 'EOF'
+          TERMUX_PKG_HOMEPAGE=https://github.com/proot-me/proot
+          TERMUX_PKG_DESCRIPTION="emulate chroot, bind mount and binfmt_misc for non-root users (portable build)"
+          TERMUX_PKG_LICENSE="GPL-2.0"
+          TERMUX_PKG_MAINTAINER="@termux"
+          TERMUX_PKG_VERSION=5.3.1
+          TERMUX_PKG_REVISION=1
+          TERMUX_PKG_SRCURL=https://github.com/proot-me/proot/archive/v${TERMUX_PKG_VERSION}.tar.gz
+          TERMUX_PKG_SHA256=1fd8a3d92b04c51c92e36ede4b0b53f4e1e7a84e8f9e9bdd6e0a4d36e239cd65
+          TERMUX_PKG_DEPENDS="libtalloc"
+          TERMUX_PKG_BUILD_IN_SRC=true
+
+          termux_step_pre_configure() {
+            sed -i 's/0x600000000000/0x400000000000/g' GNUmakefile
+          }
+          EOF
 
       - name: Build proot-${{ matrix.target_arch }}
         working-directory: ./termux-packages
