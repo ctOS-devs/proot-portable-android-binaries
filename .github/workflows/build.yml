@@ -26,13 +26,15 @@ jobs:
 
       - name: Build proot-${{ matrix.target_arch }}
         working-directory: ./termux-packages
-        run: ./scripts/run-docker.sh ./build-package.sh -a ${{ matrix.target_arch }} -I proot-portable
+        run: |
+          ./scripts/run-docker.sh ./build-package.sh -a ${{ matrix.target_arch }} -I proot-portable
+          ./scripts/run-docker.sh --run-command "chown -R 1001:1001 /home/builder/termux-packages"
 
       - name: Upload proot-${{ matrix.target_arch }}
         uses: actions/upload-artifact@v4
         with:
           name: proot-${{ matrix.target_arch }}
-          path: termux-packages/proot
+          path: public
 
   pages:
     needs: build
